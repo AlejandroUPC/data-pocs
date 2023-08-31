@@ -1,0 +1,31 @@
+version: '3'
+services:
+  postgres:
+    image: docker.io/debezium/postgres:15
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+  
+  nats:
+    image: docker.io/nats:2.9.11
+    command:
+      - "--debug"
+      - "--http_port=8222"
+      - "--js"
+    ports:
+      - "4222:4222"
+
+  debezium:
+    image: docker.io/debezium/server:2.1.1.Final
+    volumes:
+      - ./application.properties:/debezium/conf/application.properties
+    depends_on:
+      - postgres
+      - nats
